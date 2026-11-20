@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>测了吗｜在线六爻排盘、三枚铜钱起卦与 AI 辅助解读</title>
+<meta name="description" content="在测了吗在线摇卦，或录入三枚铜钱六次投掷的结果，免费生成本卦、动爻与变卦。可选 AI 解读提供专业分析和白话说明，供传统文化学习与娱乐。">
+<link rel="canonical" href="https://aisixyao.cn/">
+<meta property="og:site_name" content="测了吗">
+<meta property="og:url" content="https://aisixyao.cn/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": "https://aisixyao.cn/#website",
+  "url": "https://aisixyao.cn/",
+  "name": "测了吗",
+  "alternateName": "aisixyao.cn",
+  "inLanguage": "zh-CN"
+}
+</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="测了吗">
+<meta name="theme-color" content="#2b261f">
+<link rel="icon" href="/icon.png">
+<link rel="apple-touch-icon" href="/icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>测了吗</h1>
+    <p class="sub">测了吗（aisixyao.cn）是中文在线六爻排盘工具。用三枚铜钱投掷六次后，可从初爻到上爻手动录入结果，查看本卦、动爻和变卦，也可选择 AI 辅助解读。</p>
+  </header>
+  <div id="accountBar" class="account-bar"><span>摇卦排盘免费</span><button type="button" id="openAccount">登录 / 次数</button></div>
+
+  <div class="card">
+    <label class="fld" for="q">所测之事（必填，确认后才能摇卦 / 选卦 / 排盘）</label>
+    <input type="text" id="q" maxlength="300" enterkeyhint="done" placeholder="例：近期求财是否顺利">
+    <div class="btns">
+      <button class="act gold-outline" id="qConfirm">确认所测之事</button>
+    </div>
+    <div id="qHint" class="time-hint">请先填写并「确认所测之事」，之后才能摇卦或手动点击选卦。</div>
+    <div class="time-hint">随机摇卦：起卦时间以第六次停定上爻的那一刻为准（北京时间，精确到秒）。</div>
+    <div class="manual-time" id="manualTimeWrap">
+      <label class="fld" for="manualTime" style="margin-top:6px">手动点选铜钱时指定起卦时间（可选，北京时间）</label>
+      <input type="datetime-local" id="manualTime" step="1">
+      <div class="time-hint">留空则以点击「排盘」的时刻为准；主动选择后按所选时间排盘，清空输入可恢复实时。</div>
+    </div>
+    <div class="time-hint">日柱按北京时间 00:00 换日：23:00–23:59 的晚子时仍算当天。不同排盘流派可能采用 23:00 换日。</div>
+  </div>
+
+  <div class="card">
+    <section id="manual-entry" aria-labelledby="shakeLabel">
+      <h2 id="shakeLabel" style="font-size:1rem;margin:0">已投过六次，怎样手动录入？</h2>
+      <p class="time-hint">先填写并确认所测之事。从最下方的初爻往上，每一行对应一次投掷。点铜钱就能切换字面和花纹面。例如这一投有 2 个背，就把这一行的两枚钱点成花纹面。六行录完，直接点「排盘」查看本卦、动爻和变卦。</p>
+      <p class="time-hint">铜钱默认全部字面朝上。每行按背面数定爻，依次为 0 背老阴、1 背少阳、2 背少阴、3 背老阳。如果六次都是 0 背，直接排盘时会请你确认。</p>
+    </section>
+    <div class="shake-note"><strong>想让网页代投？</strong> 点「开始摇卦」进入随机模式。每次只翻转当前一行，依次点停六爻，最后点「排盘」。</div>
+    <div class="coin-legend" id="coinLegend" aria-label="铜钱正反面说明"></div>
+    <div id="coinBox" aria-label="六爻铜钱"></div>
+    <div class="shake-progress" id="shakeProgress" aria-label="已停定 0 / 6 爻"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div id="shakeStatus" class="shake-status" role="status" aria-live="polite">手动点击铜钱定卦，或点「开始摇卦」随机起卦</div>
+    <div class="btns cast-actions">
+      <button class="act gold-outline" id="rnd">开始摇卦</button>
+      <button class="act gold-outline" id="clr">清空</button>
+    </div>
+    <div class="btns">
+      <button class="act primary" id="go" disabled>排　盘</button>
+    </div>
+  </div>
+
+  <div id="result" class="hidden"></div>
+
+  <nav class="reading-links" aria-label="排盘帮助">
+    <a href="/guide/three-coins">如何录入三枚铜钱的结果</a>
+    <a href="/examples/li-to-shihe">看一个动爻示例</a>
+  </nav>
+  <div class="foot">
+    <p>测了吗官网 · <a class="official-site" href="https://aisixyao.cn/">aisixyao.cn</a></p>
+    <details id="dataNotice"><summary>数据记录与账号说明</summary><p>本应用记录访问时间、IP、浏览器及设备类型，用于运行维护。提交 AI 解读后，所问问题、排盘和 AI 回复会保存到运营方数据库，并将问题与排盘发送给 AI 服务商处理。请勿输入身份证、银行卡、详细住址等不必要的个人信息。</p><p>账号密码经加盐哈希保存；网页与 APP 登录同一账号时共用次数。浏览器信息不能获取微信昵称或可靠识别具体个人。广告功能仅在正式接入后由你主动选择观看，奖励以服务端验证为准；广告未开通时不会加载广告 SDK。新账号赠送 3 次 AI 解读，赠送按账号计算，不代表已实现对同一人重复注册领取的限制。请妥善保存账号密码，当前版本暂不支持自助找回。</p></details>
+    本应用提供排盘、经文列示与 AI 辅助解读，仅供传统文化学习与娱乐之用，<br>
+    不构成任何决策、医疗、法律或投资建议。重大事项请依现实判断。<br>
+    经文数据来源：qingshano/yijing-data（开源版采用的古籍整理本，异体字与标点可能与其他版本有别）。
+  </div>
+</div>
+
+<script src="/iching-data.js"></script>
+
+<script src="/vendor/lunar.js"></script>
+<script src="/engine.js"></script>
+<script src="/shake-controller.js"></script>
+<script src="/ai-divination.js"></script>
+<script src="/account-ui.js"></script>
+<script src="/answer-presentation.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

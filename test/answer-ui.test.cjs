@@ -1,0 +1,38 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const { once } = require('node:events');
+const { toDisplayAnswer } = require('../public/answer-presentation');
+const { createServer } = require('../src/server');
+const source = fs.readFileSync(path.join(__dirname, '../public/app.js'), 'utf8');
+test('new and historical cached replies use identical clean text for screen and both copy actions', () => {
+  const raw = '推论（依据：L3.MONTH、L3.DAY、SHI_YING）：工作用神L3官鬼辰土，父母L4申金。';
+  const data = { answer: raw, cached: true };
+  const context = vm.createContext({ data, LiuYaoAnswerPresentation: { toDisplayAnswer }, answer: { textContent: '' }, latestAIAnswer: '' });
+  const begin = source.indexOf('const displayedAnswer=');
+  const end = source.indexOf('answer.textContent=latestAIAnswer;', begin) + 'answer.textContent=latestAIAnswer;'.length;
+  assert.ok(begin > 0 && end > begin);
+  vm.runInContext(source.slice(begin, end), context);
+  assert.equal(context.answer.textContent, toDisplayAnswer(raw));
+  assert.equal(context.latestAIAnswer, context.answer.textContent);
+  assert.equal(data.answer, raw);
+  assert.doesNotMatch(context.latestAIAnswer, /L3|MONTH|DAY|SHI_YING/);
+  assert.match(source, /copyAI\.onclick=\(\)=>copyText\(latestAIAnswer/);
+  assert.match(source, /copyAll.*buildAllCopyText\(/);
+  assert.match(source, /latestAIAnswer/);
+});
+test('presentation module is loaded before app code and is publicly served without secrets', async t => {
+  const index = fs.readFileSync(path.join(__dirname, '../public/index.html'), 'utf8');
+  assert.ok(index.indexOf('/answer-presentation.js') < index.indexOf('/app.js'));
+  const server = createServer({ env: {}, auditStore: { logVisit: async () => {}, health: async () => ({ ok: true }) } });
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  t.after(() => new Promise(resolve => { server.close(resolve); server.closeIdleConnections(); }));
+  const response = await fetch(`http://127.0.0.1:${server.address().port}/answer-presentation.js`);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type'), /javascript/);
+  const script = await response.text();
+  assert.match(script, /LiuYaoAnswerPresentation/);
+  assert.doesNotMatch(script, /DEEPSEEK_API_KEY|MYSQL_PASSWORD|ADMIN_TOKEN/);
+});
